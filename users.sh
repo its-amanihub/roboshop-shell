@@ -16,5 +16,5 @@ npm install
 
 systemctl daemon-reload
 
-systemctl enable user 
-systemctl restart user
+systemctl enable users 
+systemctl restart users
