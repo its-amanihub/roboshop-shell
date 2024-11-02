@@ -1,24 +1,25 @@
-cp shipping.service /etc/systemd/system/shipping.service
+source common.sh
+app_name=shipping
 
-dnf install maven -y
+if [ -z "$1" ]; then
+  echo INput MySQL Root Password is missing
+  exit 1
+fi
 
-useradd roboshop
-mkdir /app 
-curl -L -o /tmp/shipping.zip https://roboshop-artifacts.s3.amazonaws.com/shipping-v3.zip 
-cd /app 
-unzip /tmp/shipping.zip
+MYSQL_ROOT_PASSWORD=$1
 
-cd /app 
-mvn clean package 
-mv target/shipping-1.0.jar shipping.jar 
+maven_setup
 
-dnf install mysql -y 
+print_heading "Install MySQL Client"
+dnf install mysql -y   &>>$log_file
+status_check $?
 
-mysql -h mysql.adevsecops08.online -uroot -pRoboShop@1 < /app/db/schema.sql
-mysql -h mysql.adevsecops08.online -uroot -pRoboShop@1 < /app/db/app-user.sql 
-mysql -h mysql.adevsecops08.online -uroot -pRoboShop@1 < /app/db/master-data.sql
+for sql_file in schema app-user master-data; do
+  print_heading "Load SQL File - $sql_file"
+  mysql -h mysql.rdevopsb81.online -uroot -p$MYSQL_ROOT_PASSWORD < /app/db/$sql_file.sql &>>$log_file
+  status_check $?
+done
 
-systemctl daemon-reload
-
-systemctl enable shipping 
-systemctl restart shipping
+print_heading "Restart Shipping Service"
+systemctl restart shipping &>>$log_file
+status_check $?
