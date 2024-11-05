@@ -5,7 +5,7 @@ print_heading "Disable Default Nginx"
 dnf module disable nginx -y &>>$log_file
 status_check $?
 
-print_heading "Enabel Nginx 24 Version"
+print_heading "Enable Nginx 24 Version"
 dnf module enable nginx:1.24 -y &>>$log_file
 status_check $?
 
